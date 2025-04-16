@@ -33,7 +33,7 @@ retroshare-service backend.
 
 ## Installing on Local Machine:
 
-* Follow these [steps](https://github.com/RetroShare/retroshare-mobile/blob/master/AndroidStudio-Flutter-setup.md)  for more Info.
+* Follow these [steps](https://github.com/RetroShare/rs-mobile/blob/master/AndroidStudio-Flutter-setup.md)  for more Info.
 
 ## Code linting and formatting
 Don't forget to format the code before creating a PR. Run the below command to check your code is formatted or not.
