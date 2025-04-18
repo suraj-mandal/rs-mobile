@@ -50,11 +50,7 @@ This results in the FlutterDir.
    - ensure "Android SDK command line tools" to be installed
 7. Close the SDK Dialog
 8. If you wish to use simulated mobiles you may later select in "more actions" AVD Manager and create emulated devices as you need.
-9. Set Flutter SDK Path & Dart SDK Path in Android Studio
-   - File -> Settings -> Languages & Frameworks  -> Flutter -> Set Flutter SDK Path:
-   - ``$(FlutterDir)\flutter`` and click on OK
-   - File -> Settings -> Languages & Frameworks  -> Dart    -> Set Dart SDK Path:
-   - ``$(FlutterDir)\bin\cache\dart-sdk`` and click on OK
+
 
 #### Associate Flutter and Android Studio
 1. Tell Flutter where to find Android Studio:    
@@ -81,7 +77,12 @@ This results in the FlutterDir.
 4. Type:  
 ``flutter pub get<return>``  
 to update the flutter package dependancies as needed in the project.
-5. open the RSMobileDir in Android Studio 
+5. Open the RSMobileDir in Android Studio ( File -> Open )
+6. Set Flutter SDK Path & Dart SDK Path in Android Studio
+   - File -> Settings -> Languages & Frameworks  -> Flutter -> Set Flutter SDK Path:
+   - ``$(FlutterDir)\flutter`` and click on OK
+   - File -> Settings -> Languages & Frameworks  -> Dart    -> Set Dart SDK Path:
+   - ``$(FlutterDir)\bin\cache\dart-sdk`` and click on OK
 
 ### Prepare your Project for use with emulated devices
 1. Within the opened Android Studio on the left side in the project-tab open the path:  
