@@ -65,8 +65,8 @@ This results in the FlutterDir.
 #### Final check of flutter installation
 - In new cmd-console type:  
   ``flutter doctor ``  
-  it should now tell all (but maybe chrome) is OK.
-
+  it should now tell all is OK. (but maybe, Visual Studio or Chrome not needed)
+![Image](https://github.com/RetroShare/rs-mobile/blob/master/screenshoots/flutter.png)
 # Retroshare mobile: Prepare project
 
 ## Main package
