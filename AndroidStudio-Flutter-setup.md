@@ -107,20 +107,6 @@ Now your project - this is to do in any new project - is able to define and use 
       ``flutter devices<return>``  
       should now list your mobile as availabel 
 
-# Run the apk on mobile
-## Install the service apk on the mobile
-### a) physical mobile
-1. plug in the USB of the phone
-2. activate: USB-usage file transfer
-3. load the service apk to the mobile and install it
-
-### b) emulated phone (but not only)
-1. For your convenience:  
-   Add in environment variables of your account to the PATH-variable of USER context separated by ';' the explicit full path to the command_tools: $(RSPlatformTools) where the adb.exe houses which we will need.
-2. Open a cmd-console within the directory of your service apk
-3. type in cmd:  
-   ``adb install "YOUR_SERVCIE_APK.apk" <return>``
-
 ## Run the RestroShare Mobile
 
 Type in cmd console:  
