@@ -9,9 +9,6 @@
 
 RetroShare mobile client written in Flutter.
 
-This is a Flutter frontend for the retroshare-service backend. You need to have **both working**: this frontend, and the 
-retroshare-service backend.
-
 ## Features
 
 * Create one or more Retroshare profiles.
