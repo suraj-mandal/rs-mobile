@@ -3,22 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 import 'package:retroshare/common/show_dialog.dart';
-import 'package:retroshare/provider/Idenity.dart';
+import 'package:retroshare/provider/identity.dart';
 import 'package:retroshare/provider/auth.dart';
 import 'package:retroshare_api_wrapper/retroshare.dart';
 
 class SignInScreen extends StatefulWidget {
+  const SignInScreen({super.key});
+
   @override
-  _SignInScreenState createState() => _SignInScreenState();
+  SignInScreenState createState() => SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class SignInScreenState extends State<SignInScreen> {
   TextEditingController passwordController = TextEditingController();
 
-  List<DropdownMenuItem<Account>> accountsDropdown;
-  Account currentAccount;
-  bool hideLocations;
-  bool wrongPassword;
+  late List<DropdownMenuItem<Account>> accountsDropdown;
+  late Account currentAccount;
+  late bool hideLocations;
+  late bool wrongPassword;
 
   @override
   void initState() {
@@ -42,18 +44,22 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   Future<void> attemptLogIn(Account currentAccount, String password) async {
-    Navigator.pushNamed(context, '/', arguments: {
-      'statusText': 'Attempt login...\nCrypto in course',
-      'isLoading': true,
-      'spinner': true
-    });
+    await Navigator.pushNamed(
+      context,
+      '/',
+      arguments: {
+        'statusText': 'Attempt login...\nCrypto in course',
+        'isLoading': true,
+        'spinner': true,
+      },
+    );
     try {
       await Provider.of<AccountCredentials>(context, listen: false)
           .login(currentAccount, password)
           .then((value) {
         final ids = Provider.of<Identities>(context, listen: false);
         ids.fetchOwnidenities().then((value) {
-          ids.ownIdentity != null && ids.ownIdentity.isEmpty
+          ids.ownIdentity.isEmpty
               ? Navigator.pushReplacementNamed(
                   context,
                   '/create_identity',
@@ -67,14 +73,14 @@ class _SignInScreenState extends State<SignInScreen> {
       if (error.message.contains('WRONG PASSWORD')) {
         _isWrongPassword();
       } else {
-        errorShowDialog(
+        await errorShowDialog(
           errorMessage,
           'Please input your valid credentials',
           context,
         );
       }
     } catch (e) {
-      errorShowDialog(
+      await errorShowDialog(
         'Retroshare Service Down',
         'Try to  restart the app',
         context,
@@ -90,30 +96,32 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   List<DropdownMenuItem<Account>> getDropDownMenuItems(BuildContext context) {
-    final List<DropdownMenuItem<Account>> items = [];
-    for (Account account
+    final items = <DropdownMenuItem<Account>>[];
+    for (final account
         in Provider.of<AccountCredentials>(context, listen: false)
             .accountList) {
-      items.add(DropdownMenuItem(
-        value: account,
-        key: UniqueKey(),
-        child: Row(
-          children: <Widget>[
-            Text(account.pgpName),
-            Visibility(
-              visible: !hideLocations,
-              child: Text(':${account.locationName}'),
-            )
-          ],
+      items.add(
+        DropdownMenuItem(
+          value: account,
+          key: UniqueKey(),
+          child: Row(
+            children: <Widget>[
+              Text(account.pgpName),
+              Visibility(
+                visible: !hideLocations,
+                child: Text(':${account.locationName}'),
+              ),
+            ],
+          ),
         ),
-      ));
+      );
     }
     return items;
   }
 
-  void changedDropDownItem(Account selectedAccount) {
+  void changedDropDownItem(Account? selectedAccount) {
     setState(() {
-      currentAccount = selectedAccount;
+      currentAccount = selectedAccount!;
     });
   }
 
@@ -177,20 +185,20 @@ class _SignInScreenState extends State<SignInScreen> {
                                         const Icon(
                                           Icons.person_outline,
                                           color: Color(0xFF9E9E9E),
-                                          size: 22.0,
+                                          size: 22,
                                         ),
                                         const SizedBox(
                                           width: 15,
                                         ),
                                         Expanded(
                                           child: getDropDownMenuItems(context)
-                                                      .isNotEmpty &&
-                                                  currentAccount != null
+                                                  .isNotEmpty
                                               ? DropdownButtonHideUnderline(
                                                   child: DropdownButton(
                                                     value: currentAccount,
                                                     items: getDropDownMenuItems(
-                                                        context),
+                                                      context,
+                                                    ),
                                                     onChanged:
                                                         changedDropDownItem,
                                                     disabledHint:
@@ -223,7 +231,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                       icon: Icon(
                                         Icons.lock_outline,
                                         color: Color(0xFF9E9E9E),
-                                        size: 22.0,
+                                        size: 22,
                                       ),
                                       hintText: 'Password',
                                     ),
@@ -233,11 +241,11 @@ class _SignInScreenState extends State<SignInScreen> {
                               ),
                               Visibility(
                                 visible: wrongPassword,
-                                child: SizedBox(
+                                child: const SizedBox(
                                   width: double.infinity,
                                   child: Row(
                                     children: <Widget>[
-                                      const SizedBox(
+                                      SizedBox(
                                         height: 25,
                                         width: 52,
                                         child: Align(
@@ -256,15 +264,13 @@ class _SignInScreenState extends State<SignInScreen> {
                                 ),
                               ),
                               SizedBox(height: wrongPassword ? 8 : 24),
-                              FlatButton(
+                              ElevatedButton(
                                 onPressed: () {
                                   attemptLogIn(
                                     currentAccount,
                                     passwordController.text,
                                   );
                                 },
-                                textColor: Colors.white,
-                                padding: EdgeInsets.zero,
                                 child: SizedBox(
                                   width: double.infinity,
                                   child: Container(
@@ -275,11 +281,11 @@ class _SignInScreenState extends State<SignInScreen> {
                                           Color(0xFF00FFFF),
                                           Color(0xFF29ABE2),
                                         ],
-                                        begin: Alignment(-1.0, -4.0),
-                                        end: Alignment(1.0, 4.0),
+                                        begin: Alignment(-1, -4),
+                                        end: Alignment(1, 4),
                                       ),
                                     ),
-                                    padding: const EdgeInsets.all(7.0),
+                                    padding: const EdgeInsets.all(7),
                                     child: const Text(
                                       'Login',
                                       style: TextStyle(fontSize: 17),
@@ -303,12 +309,10 @@ class _SignInScreenState extends State<SignInScreen> {
                               const SizedBox(
                                 height: 6,
                               ),
-                              FlatButton(
+                              ElevatedButton(
                                 onPressed: () {
                                   Navigator.pushNamed(context, '/signup');
                                 },
-                                textColor: Colors.white,
-                                padding: EdgeInsets.zero,
                                 child: SizedBox(
                                   width: double.infinity,
                                   child: Container(
@@ -319,11 +323,11 @@ class _SignInScreenState extends State<SignInScreen> {
                                           Color(0xFF00FFFF),
                                           Color(0xFF29ABE2),
                                         ],
-                                        begin: Alignment(-1.0, -4.0),
-                                        end: Alignment(1.0, 4.0),
+                                        begin: Alignment(-1, -4),
+                                        end: Alignment(1, 4),
                                       ),
                                     ),
-                                    padding: const EdgeInsets.all(7.0),
+                                    padding: const EdgeInsets.all(7),
                                     child: const Text(
                                       'Create Account',
                                       style: TextStyle(fontSize: 17),

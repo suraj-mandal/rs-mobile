@@ -1,17 +1,16 @@
-import 'package:cool_alert/cool_alert.dart';
+import 'package:cooler_alerts/cooler_alerts.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:retroshare/common/styles.dart';
 import 'package:retroshare/model/http_exception.dart';
-import 'package:retroshare/provider/Idenity.dart';
-import 'package:retroshare_api_wrapper/retroshare.dart';
+import 'package:retroshare/provider/identity.dart';
 
-errorShowDialog(String title, String text, BuildContext context) {
-  return CoolAlert.show(
+Future errorShowDialog(String title, String text, BuildContext context) {
+  return CoolerAlerts.show(
     context: context,
     type: CoolAlertType.error,
-    onConfirmBtnTap: () {
+    onConfirmBtnTap: (context) {
       Navigator.of(context).pop();
       Navigator.of(context).pop();
     },
@@ -20,15 +19,15 @@ errorShowDialog(String title, String text, BuildContext context) {
   );
 }
 
-loading(BuildContext context) {
-  return CoolAlert.show(context: context, type: CoolAlertType.loading);
+Future loading(BuildContext context) {
+  return CoolerAlerts.show(context: context, type: CoolAlertType.loading);
 }
 
-successShowDialog(String title, String text, BuildContext context) {
-  return CoolAlert.show(
+Future successShowDialog(String title, String text, BuildContext context) {
+  return CoolerAlerts.show(
     context: context,
     type: CoolAlertType.success,
-    onConfirmBtnTap: () {
+    onConfirmBtnTap: (context) {
       Navigator.of(context).pop();
       Navigator.of(context).pop();
     },
@@ -37,11 +36,11 @@ successShowDialog(String title, String text, BuildContext context) {
   );
 }
 
-warningShowDialog(String title, String text, BuildContext context) {
-  return CoolAlert.show(
+Future warningShowDialog(String title, String text, BuildContext context) {
+  return CoolerAlerts.show(
     context: context,
     type: CoolAlertType.warning,
-    onConfirmBtnTap: () {
+    onConfirmBtnTap: (context) {
       Navigator.of(context).pop();
       Navigator.of(context).pop();
     },
@@ -50,19 +49,18 @@ warningShowDialog(String title, String text, BuildContext context) {
   );
 }
 
-showFlutterToast(String title, Color color) {
+Future<bool?> showFlutterToast(String title, Color color) {
   return Fluttertoast.showToast(
     msg: title,
     toastLength: Toast.LENGTH_SHORT,
     gravity: ToastGravity.BOTTOM,
-    timeInSecForIosWeb: 1,
     backgroundColor: color,
     textColor: Colors.white,
-    fontSize: 16.0,
+    fontSize: 16,
   );
 }
 
-contentBox(BuildContext context) {
+Stack contentBox(BuildContext context) {
   return Stack(
     children: <Widget>[
       Container(
@@ -74,11 +72,12 @@ contentBox(BuildContext context) {
         ),
         margin: const EdgeInsets.only(top: Constants.avatarRadius),
         decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(Constants.padding),
-            boxShadow: const [
-              BoxShadow(offset: Offset(0, 10), blurRadius: 10),
-            ]),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(Constants.padding),
+          boxShadow: const [
+            BoxShadow(offset: Offset(0, 10), blurRadius: 10),
+          ],
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -91,14 +90,15 @@ contentBox(BuildContext context) {
             ),
             Align(
               alignment: Alignment.bottomRight,
-              child: FlatButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text(
-                    'OK',
-                    style: TextStyle(fontSize: 14),
-                  )),
+              child: TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'OK',
+                  style: TextStyle(fontSize: 14),
+                ),
+              ),
             ),
           ],
         ),
@@ -125,9 +125,9 @@ contentBox(BuildContext context) {
 // delete dialog Box
 
 void showdeleteDialog(BuildContext context) {
-  final String name =
+  final name =
       Provider.of<Identities>(context, listen: false).currentIdentity.name;
-  final List<Identity> ownIdsList =
+  final ownIdsList =
       Provider.of<Identities>(context, listen: false).ownIdentity;
 
   if (ownIdsList.length > 1) {
@@ -137,17 +137,16 @@ void showdeleteDialog(BuildContext context) {
         return AlertDialog(
           title: Text("Delete '$name'?"),
           content: const Text(
-            // ignore: lines_longer_than_80_chars
             'The deletion of identity cannot be undone. Are you sure you want to continue?',
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
               child: const Text('Cancel'),
             ),
-            FlatButton(
+            TextButton(
               onPressed: () async {
                 try {
                   await Provider.of<Identities>(context, listen: false)
@@ -155,12 +154,18 @@ void showdeleteDialog(BuildContext context) {
                       .then((value) {
                     Navigator.of(context).pop();
                   });
-                } on HttpException catch (e) {
-                  warningShowDialog('Retro Service is Down',
-                      'Please ensure retroshare service is not down', context);
+                } on HttpException catch (_) {
+                  await warningShowDialog(
+                    'Retro Service is Down',
+                    'Please ensure retroshare service is not down',
+                    context,
+                  );
                 } catch (e) {
-                  warningShowDialog(
-                      'Try Again', 'Something wrong happens!', context);
+                  await warningShowDialog(
+                    'Try Again',
+                    'Something wrong happens!',
+                    context,
+                  );
                 }
               },
               child: const Text('Delete'),
@@ -176,11 +181,10 @@ void showdeleteDialog(BuildContext context) {
         return AlertDialog(
           title: const Text('Too few identities'),
           content: const Text(
-            // ignore: lines_longer_than_80_chars
             'You must have at least one more identity to be able to delete this one.',
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },

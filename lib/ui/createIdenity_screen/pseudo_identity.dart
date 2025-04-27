@@ -1,53 +1,96 @@
+import 'dart:async';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:retroshare/common/bottom_bar.dart';
 import 'package:retroshare/common/color_loader_3.dart';
 import 'package:retroshare/common/image_picker_dialog.dart';
 import 'package:retroshare/common/styles.dart';
-import 'dart:async';
-import 'package:retroshare/provider/Idenity.dart';
+import 'package:retroshare/provider/identity.dart';
 import 'package:retroshare_api_wrapper/retroshare.dart';
 
 class PseudoSignedIdenityTab extends StatefulWidget {
-  const PseudoSignedIdenityTab(this.isFirstId, this.key);
+  const PseudoSignedIdenityTab(this.isFirstId, {super.key});
   final bool isFirstId;
-  final Key key;
 
   @override
-  _PseudoSignedIdenityTabState createState() => _PseudoSignedIdenityTabState();
+  PseudoSignedIdenityTabState createState() => PseudoSignedIdenityTabState();
 }
 
-class _PseudoSignedIdenityTabState extends State<PseudoSignedIdenityTab> {
-  bool _pseduorequestCreateIdentity = false;
-  TextEditingController pseudosignednameController = TextEditingController();
-  RsGxsImage _image;
+class PseudoSignedIdenityTabState extends State<PseudoSignedIdenityTab> {
+  bool _isLoading = false;
+  final TextEditingController pseudosignednameController =
+      TextEditingController();
+  RsGxsImage? _image;
 
   bool _showError = false;
-  void _setImage(File image) {
+
+  @override
+  void dispose() {
+    pseudosignednameController.dispose();
+    super.dispose();
+  }
+
+  void _setImage(File? image) {
     Navigator.pop(context);
+    if (!mounted) return;
     setState(() {
       if (image != null) {
-        _image = RsGxsImage(image.readAsBytesSync());
+        try {
+          final bytes = image.readAsBytesSync();
+          _image = RsGxsImage.fromBytes(bytes);
+        } catch (e) {
+          debugPrint('Error reading image file: $e');
+          _image = null;
+        }
+      } else {
+        _image = null;
       }
     });
   }
 
-  bool _validate(text) {
-    return pseudosignednameController.text.length < 3 ? false : true;
+  bool _validate() {
+    return pseudosignednameController.text.length >= 3;
   }
 
   Future<void> _createIdentity() async {
-    await Provider.of<Identities>(context, listen: false)
-        .createnewIdenity(
-            Identity('', false, pseudosignednameController.text,
-                _image?.base64String),
-            _image)
-        .then((value) {
-      widget.isFirstId
-          ? Navigator.pushReplacementNamed(context, '/home')
-          : Navigator.pop(context);
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
     });
+
+    try {
+      final avatarBase64 = _image?.base64String;
+      await Provider.of<Identities>(context, listen: false).createnewIdenity(
+        Identity(
+          mId: '',
+          signed: false,
+          name: pseudosignednameController.text,
+          avatar: avatarBase64,
+          isContact: false,
+        ),
+        _image ?? RsGxsImage(),
+      );
+      if (!mounted) return;
+      if (widget.isFirstId) {
+        await Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      debugPrint('Error creating identity: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error creating identity: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -68,31 +111,35 @@ class _PseudoSignedIdenityTabState extends State<PseudoSignedIdenityTab> {
                       ),
                       GestureDetector(
                         onTap: () {
+                          if (_isLoading) return;
                           imagePickerDialog(context, _setImage);
                         },
                         child: Container(
                           height: 300 * 0.7,
                           width: 300 * 0.7,
-                          decoration: _image?.mData == null
-                              ? null
-                              : BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.circular(300 * 0.7 * 0.33),
-                                  image: DecorationImage(
-                                    fit: BoxFit.fitWidth,
-                                    image: MemoryImage(_image?.mData),
-                                  ),
-                                ),
-                          child: Visibility(
-                            visible:
-                                _image != null ? _image?.mData?.isEmpty : true,
-                            child: const Center(
-                              child: Icon(
-                                Icons.person,
-                                size: 300 * 0.7,
-                              ),
+                          decoration: BoxDecoration(
+                            image: (_image?.mData != null)
+                                ? DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: MemoryImage(_image!.mData!),
+                                  )
+                                : null,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.grey[300]!,
+                              width: 2,
                             ),
+                            color: Colors.grey[200],
                           ),
+                          child: (_image?.mData == null)
+                              ? Center(
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 100,
+                                    color: Colors.grey[400],
+                                  ),
+                                )
+                              : null,
                         ),
                       ),
                       const SizedBox(
@@ -103,54 +150,52 @@ class _PseudoSignedIdenityTabState extends State<PseudoSignedIdenityTab> {
                         child: Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                            color: const Color(0xFFF5F5F5),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
                           ),
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           height: 40,
                           child: TextField(
                             controller: pseudosignednameController,
-                            enabled: !_pseduorequestCreateIdentity,
+                            enabled: !_isLoading,
                             onChanged: (text) {
+                              if (!mounted) return;
                               setState(() {
-                                _showError = !_validate(text);
+                                _showError = !_validate();
                               });
                             },
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               border: InputBorder.none,
                               icon: Icon(
                                 Icons.person_outline,
-                                color: Color(0xFF9E9E9E),
-                                size: 22.0,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                                size: 22,
                               ),
                               hintText: 'Name',
+                              hintStyle:
+                                  TextStyle(color: Theme.of(context).hintColor),
                             ),
-                            style: Theme.of(context).textTheme.bodyText1,
+                            style: Theme.of(context).textTheme.bodyLarge,
                           ),
                         ),
                       ),
                       Visibility(
-                        visible: _showError,
+                        visible: _showError && !_isLoading,
                         child: SizedBox(
                           width: double.infinity,
-                          child: Row(
-                            children: <Widget>[
-                              const SizedBox(
-                                width: 52,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 52, top: 4),
+                            child: Text(
+                              'Name must be at least 3 characters',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                                fontSize: 12,
                               ),
-                              const SizedBox(
-                                height: 25,
-                                child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Text(
-                                    'Name too short',
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ),
-                            ],
+                              textAlign: TextAlign.left,
+                            ),
                           ),
                         ),
                       ),
@@ -164,48 +209,51 @@ class _PseudoSignedIdenityTabState extends State<PseudoSignedIdenityTab> {
             ),
             const Spacer(),
             Visibility(
-              visible: !_pseduorequestCreateIdentity,
+              visible: !_isLoading,
               child: BottomBar(
                 child: Center(
                   child: SizedBox(
                     height: 2 * appBarHeight / 3,
-                    child: Builder(
-                      builder: (context) => FlatButton(
-                        onPressed: () {
-                          setState(() {
-                            _showError =
-                                !_validate(pseudosignednameController.text);
-                          });
-                          if (!_showError) {
-                            setState(() {
-                              _pseduorequestCreateIdentity = true;
-                            });
-                            _createIdentity();
-                          }
-                        },
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0 + personDelegateHeight * 0.04),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15),
-                              gradient: const LinearGradient(
-                                colors: <Color>[
-                                  Color(0xFF00FFFF),
-                                  Color(0xFF29ABE2),
-                                ],
-                                begin: Alignment(-1.0, -4.0),
-                                end: Alignment(1.0, 4.0),
-                              ),
-                            ),
-                            padding: const EdgeInsets.all(6.0),
-                            child: Center(
-                              child: Text(
-                                'Create Identity',
-                                style: Theme.of(context).textTheme.button,
-                                textAlign: TextAlign.center,
-                              ),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      onPressed: () {
+                        final isValid = _validate();
+                        if (!mounted) return;
+                        setState(() {
+                          _showError = !isValid;
+                        });
+                        if (isValid) {
+                          _createIdentity();
+                        }
+                      },
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          gradient: const LinearGradient(
+                            colors: <Color>[
+                              Color(0xFF00FFFF),
+                              Color(0xFF29ABE2),
+                            ],
+                            begin: Alignment(-1, -4),
+                            end: Alignment(1, 4),
+                          ),
+                        ),
+                        child: Container(
+                          alignment: Alignment.center,
+                          constraints: const BoxConstraints(minHeight: 50),
+                          child: FittedBox(
+                            child: Text(
+                              'Create Identity',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(color: Colors.white),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
@@ -218,14 +266,19 @@ class _PseudoSignedIdenityTabState extends State<PseudoSignedIdenityTab> {
           ],
         ),
         Visibility(
-          visible: _pseduorequestCreateIdentity,
+          visible: _isLoading,
           child: const Center(
-            child: ColorLoader3(
-              radius: 15.0,
-              dotRadius: 6.0,
+            child: DecoratedBox(
+              decoration: BoxDecoration(color: Color.fromRGBO(0, 0, 0, 0.1)),
+              child: Center(
+                child: ColorLoader3(
+                  radius: 15,
+                  dotRadius: 6,
+                ),
+              ),
             ),
           ),
-        )
+        ),
       ],
     );
   }

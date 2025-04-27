@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:retroshare/common/styles.dart';
-import 'package:retroshare/provider/Idenity.dart';
+import 'package:retroshare/provider/identity.dart';
 import 'package:retroshare/provider/auth.dart';
 import 'package:retroshare_api_wrapper/retroshare.dart';
 
 class NotificationScreen extends StatefulWidget {
+  const NotificationScreen({super.key});
+
   @override
-  _NotificationScreenState createState() => _NotificationScreenState();
+  NotificationScreenState createState() => NotificationScreenState();
 }
 
-class _NotificationScreenState extends State<NotificationScreen> {
+class NotificationScreenState extends State<NotificationScreen> {
   Future<dynamic> getinvitelist(BuildContext context) async {
     final authToken =
         Provider.of<AccountCredentials>(context, listen: false).authtoken;
     final invites = await RsMsgs.getPendingChatLobbyInvites(authToken);
-    for (int i = 0; i < invites.length; i++) {
+    for (var i = 0; i < invites.length; i++) {
       invites[i]['location'] = await RsPeers.getPeerDetails(
         invites[i]['peer_id'].toString(),
         authToken,
@@ -51,7 +53,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   Expanded(
                     child: Text(
                       'Notification',
-                      style: Theme.of(context).textTheme.bodyText1,
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ),
                 ],
@@ -97,7 +99,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                               RichText(
                                                 text: TextSpan(
                                                   text:
-                                                      // ignore: lines_longer_than_80_chars
                                                       '${snapshot.data[index]['location'].accountName}',
                                                   style: const TextStyle(
                                                     fontFamily: 'Oxygen',
@@ -107,7 +108,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                                   children: <TextSpan>[
                                                     const TextSpan(
                                                       text:
-                                                          // ignore: lines_longer_than_80_chars
                                                           ' sent you the invite to join the chatlobby ',
                                                       style: TextStyle(
                                                         fontSize: 15,
@@ -115,14 +115,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                                       ),
                                                     ),
                                                     TextSpan(
-                                                        text:
-                                                            // ignore: lines_longer_than_80_chars
-                                                            '${snapshot.data[index]['lobby_name']}.',
-                                                        // ignore: lines_longer_than_80_chars
-                                                        style: const TextStyle(
-                                                          fontSize: 15,
-                                                          fontFamily: 'Oxygen',
-                                                        ))
+                                                      text:
+                                                          '${snapshot.data[index]['lobby_name']}.',
+                                                      style: const TextStyle(
+                                                        fontSize: 15,
+                                                        fontFamily: 'Oxygen',
+                                                      ),
+                                                    ),
                                                   ],
                                                 ),
                                               ),
@@ -131,9 +130,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.end,
                                                   children: [
-                                                    FlatButton(
+                                                    ElevatedButton(
                                                       onPressed: () async {
-                                                        // ignore: lines_longer_than_80_chars
                                                         await RsMsgs
                                                             .denyLobbyInvite(
                                                           snapshot.data[index]
@@ -151,7 +149,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                                         ),
                                                       ),
                                                     ),
-                                                    FlatButton(
+                                                    ElevatedButton(
                                                       onPressed: () async {
                                                         final mId = Provider.of<
                                                             Identities>(
@@ -159,7 +157,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                                           listen: false,
                                                         ).currentIdentity.mId;
 
-                                                        RsMsgs
+                                                        await RsMsgs
                                                             .acceptLobbyInvite(
                                                           snapshot.data[index]
                                                                   ['lobby_id']
@@ -184,13 +182,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                                               Colors.blueAccent,
                                                         ),
                                                       ),
-                                                    )
+                                                    ),
                                                   ],
                                                 ),
-                                              )
+                                              ),
                                             ],
                                           ),
-                                        )
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -208,12 +206,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 25),
+                                        vertical: 25,
+                                      ),
                                       child: Text(
                                         "Looks like there aren't any notification",
                                         style: Theme.of(context)
                                             .textTheme
-                                            .bodyText1,
+                                            .bodyLarge,
                                         textAlign: TextAlign.center,
                                       ),
                                     ),
@@ -224,7 +223,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       : const Center(child: CircularProgressIndicator());
                 },
               ),
-            )
+            ),
           ],
         ),
       ),

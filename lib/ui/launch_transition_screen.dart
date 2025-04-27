@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 class LaunchTransitionScreen extends StatefulWidget {
+  const LaunchTransitionScreen({super.key});
+
   @override
-  _LaunchTransitionScreenState createState() => _LaunchTransitionScreenState();
+  LaunchTransitionScreenState createState() => LaunchTransitionScreenState();
 }
 
-class _LaunchTransitionScreenState extends State<LaunchTransitionScreen> {
+class LaunchTransitionScreenState extends State<LaunchTransitionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,12 +38,14 @@ class _LaunchTransitionScreenState extends State<LaunchTransitionScreen> {
                           flex: 2,
                           child: Column(
                             children: <Widget>[
-                              FlatButton(
+                              ElevatedButton(
                                 onPressed: () {
                                   Navigator.pushNamed(context, '/signup');
                                 },
-                                textColor: Colors.white,
-                                padding: EdgeInsets.zero,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.black,
+                                ),
                                 child: SizedBox(
                                   width: double.infinity,
                                   child: Container(
@@ -52,11 +56,11 @@ class _LaunchTransitionScreenState extends State<LaunchTransitionScreen> {
                                           Color(0xFF00FFFF),
                                           Color(0xFF29ABE2),
                                         ],
-                                        begin: Alignment(-1.0, -4.0),
-                                        end: Alignment(1.0, 4.0),
+                                        begin: Alignment(-1, -4),
+                                        end: Alignment(1, 4),
                                       ),
                                     ),
-                                    padding: const EdgeInsets.all(10.0),
+                                    padding: const EdgeInsets.all(10),
                                     child: const Text(
                                       'Create account',
                                       style: TextStyle(fontSize: 18),
