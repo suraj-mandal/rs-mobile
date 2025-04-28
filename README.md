@@ -30,6 +30,17 @@ RetroShare mobile client written in Flutter.
 
 ## Installing on Local Machine:
 
+* Download [Qt 5.15.16](https://download.qt.io/archive/qt/5.15/5.15.16).
+* Add the Android  dependencies `Android x86` , `Android ARM64-v8a` and `Android ARMv7` using QT maintainer tool.
+* Add the `Qt 5.15.16` location in `retroshare-service.properties.example` file in `qt.installdir`.
+* Run below command:
+```bash
+  cd android
+  cp retroshare-service.properties.example retroshare-service.properties
+  cd ..
+  flutter run
+```
+
 * Follow these [steps](https://github.com/RetroShare/rs-mobile/blob/master/AndroidStudio-Flutter-setup.md)  for more Info.
 
 ## Code linting and formatting
