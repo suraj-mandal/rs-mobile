@@ -144,7 +144,7 @@ class RoomFriendsTabState extends State<RoomFriendsTab> {
                             );
                           },
                           // 8. Add basic error handling/check for navigation
-                          onPressed: () {
+                          onPressed: () async {
                             try {
                               final curr = Provider.of<Identities>(
                                 context,
@@ -159,7 +159,7 @@ class RoomFriendsTabState extends State<RoomFriendsTab> {
                                 listen: false,
                               ).getChat(curr, participant);
 
-                              Navigator.pushNamed(
+                              await Navigator.pushNamed(
                                 context,
                                 '/room',
                                 arguments: {

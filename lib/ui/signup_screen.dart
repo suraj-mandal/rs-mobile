@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:retroshare/common/show_dialog.dart';
@@ -64,7 +66,7 @@ class SignUpScreenState extends State<SignUpScreen> {
 
     if (!success) return;
 
-    await Navigator.pushNamed(
+    unawaited(Navigator.pushNamed(
       context,
       '/',
       arguments: {
@@ -72,7 +74,7 @@ class SignUpScreenState extends State<SignUpScreen> {
         'isLoading': true,
         'spinner': true,
       },
-    );
+    ));
     try {
       final accountSignup =
           Provider.of<AccountCredentials>(context, listen: false);

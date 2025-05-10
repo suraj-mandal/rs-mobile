@@ -39,8 +39,8 @@ class LaunchTransitionScreenState extends State<LaunchTransitionScreen> {
                           child: Column(
                             children: <Widget>[
                               ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pushNamed(context, '/signup');
+                                onPressed: () async {
+                                  await Navigator.pushNamed(context, '/signup');
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,

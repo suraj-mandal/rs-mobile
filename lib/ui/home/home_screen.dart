@@ -279,8 +279,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: FittedBox(
             child: FloatingActionButton(
               backgroundColor: Colors.lightBlueAccent,
-              onPressed: () {
-                Navigator.pushNamed(context, '/create_room');
+              onPressed: () async {
+                await Navigator.pushNamed(context, '/create_room');
               },
               child: const Icon(
                 Icons.add,

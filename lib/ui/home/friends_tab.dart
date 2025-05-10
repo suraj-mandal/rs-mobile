@@ -89,13 +89,13 @@ class FriendsTabState extends State<FriendsTab> {
                                 context,
                               );
                             },
-                            onPressed: () {
+                            onPressed: () async {
                               final curr = Provider.of<Identities>(
                                 context,
                                 listen: false,
                               ).currentIdentity;
                               if (curr == null) return;
-                              Navigator.pushNamed(
+                              await Navigator.pushNamed(
                                 context,
                                 '/room',
                                 arguments: {
@@ -161,13 +161,13 @@ class FriendsTabState extends State<FriendsTab> {
                                 context,
                               );
                             },
-                            onPressed: () {
+                            onPressed: () async {
                               final curr = Provider.of<Identities>(
                                 context,
                                 listen: false,
                               ).currentIdentity;
                               if (curr == null) return;
-                              Navigator.pushNamed(
+                              await Navigator.pushNamed(
                                 context,
                                 '/room',
                                 arguments: {

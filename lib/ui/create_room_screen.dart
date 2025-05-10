@@ -616,12 +616,12 @@ class CreateRoomScreenState extends State<CreateRoomScreen>
                             _suggestionsList[index],
                             context,
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             final curr =
                                 Provider.of<Identities>(context, listen: false)
                                     .currentIdentity;
                             if (curr == null) return;
-                            Navigator.pushNamed(
+                            await Navigator.pushNamed(
                               context,
                               '/room',
                               arguments: {

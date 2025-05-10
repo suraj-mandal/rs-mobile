@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -46,7 +47,7 @@ class SignInScreenState extends State<SignInScreen> {
 
   Future<void> attemptLogIn(Account currentAccount, String password) async {
     if (!mounted) return;
-    await Navigator.pushNamed(
+    unawaited(Navigator.pushNamed(
       context,
       '/',
       arguments: {
@@ -54,7 +55,7 @@ class SignInScreenState extends State<SignInScreen> {
         'isLoading': true,
         'spinner': true,
       },
-    );
+    ));
 
     try {
       if (!mounted) return;
@@ -318,8 +319,8 @@ class SignInScreenState extends State<SignInScreen> {
 
   Widget _buildSignUpButton(BuildContext context) {
     return TextButton(
-      onPressed: () {
-        Navigator.pushNamed(context, '/signup');
+      onPressed: () async {
+        await Navigator.pushNamed(context, '/signup');
       },
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

@@ -39,12 +39,12 @@ class ChatsTab extends StatelessWidget {
                           data: PersonDelegateData.chatData(
                             chatsList.subscribedlist[index],
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             final curr =
                                 Provider.of<Identities>(context, listen: false)
                                     .currentIdentity;
                             if (curr == null) return;
-                            Navigator.pushNamed(
+                            await Navigator.pushNamed(
                               context,
                               '/room',
                               arguments: {
