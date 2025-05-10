@@ -1,10 +1,11 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 import 'package:retroshare/common/show_dialog.dart';
-import 'package:retroshare/provider/identity.dart';
 import 'package:retroshare/provider/auth.dart';
+import 'package:retroshare/provider/identity.dart';
 import 'package:retroshare_api_wrapper/retroshare.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -44,6 +45,7 @@ class SignInScreenState extends State<SignInScreen> {
   }
 
   Future<void> attemptLogIn(Account currentAccount, String password) async {
+    if (!mounted) return;
     await Navigator.pushNamed(
       context,
       '/',
@@ -53,92 +55,304 @@ class SignInScreenState extends State<SignInScreen> {
         'spinner': true,
       },
     );
+
     try {
-      await Provider.of<AccountCredentials>(context, listen: false)
-          .login(currentAccount, password)
-          .then((value) {
-        final ids = Provider.of<Identities>(context, listen: false);
-        ids.fetchOwnidenities().then((value) {
-          ids.ownIdentity.isEmpty
-              ? Navigator.pushReplacementNamed(
-                  context,
-                  '/create_identity',
-                  arguments: true,
-                )
-              : Navigator.pushReplacementNamed(context, '/home');
-        });
-      });
+      if (!mounted) return;
+      final authProvider =
+          Provider.of<AccountCredentials>(context, listen: false);
+      await authProvider.login(currentAccount, password);
+
+      if (!mounted) return;
+      final idsProvider = Provider.of<Identities>(context, listen: false);
+      await idsProvider.fetchOwnidenities();
+
+      if (!mounted) return;
+      if (idsProvider.ownIdentity.isEmpty) {
+        await Navigator.pushReplacementNamed(
+          context,
+          '/create_identity',
+          arguments: true,
+        );
+      } else {
+        await Navigator.pushReplacementNamed(context, '/home');
+      }
     } on HttpException catch (error) {
-      const errorMessage = 'Authentication failed';
+      if (!mounted) return;
       if (error.message.contains('WRONG PASSWORD')) {
-        _isWrongPassword();
+        _handleWrongPassword();
       } else {
         await errorShowDialog(
-          errorMessage,
-          'Please input your valid credentials',
+          'Authentication Failed',
+          error.message,
           context,
         );
+        if (Navigator.canPop(context)) Navigator.pop(context);
       }
     } catch (e) {
+      if (!mounted) return;
       await errorShowDialog(
         'Retroshare Service Down',
-        'Try to  restart the app',
+        'An error occurred: $e'.trim(),
         context,
       );
+      if (Navigator.canPop(context)) Navigator.pop(context);
     }
   }
 
-  void _isWrongPassword() {
-    Navigator.pop(context);
-    setState(() {
-      wrongPassword = true;
-    });
+  void _handleWrongPassword() {
+    if (Navigator.canPop(context)) Navigator.pop(context);
+    if (mounted) {
+      setState(() {
+        wrongPassword = true;
+      });
+    }
   }
 
-  List<DropdownMenuItem<Account>> getDropDownMenuItems(BuildContext context) {
-    final items = <DropdownMenuItem<Account>>[];
-    for (final account
-        in Provider.of<AccountCredentials>(context, listen: false)
-            .accountList) {
-      items.add(
+  List<DropdownMenuItem<Account>> _buildDropdownMenuItems() {
+    final accounts =
+        Provider.of<AccountCredentials>(context, listen: false).accountList;
+    if (accounts.isEmpty && currentAccount != null) {
+      return [
         DropdownMenuItem(
-          value: account,
+          value: currentAccount,
           key: UniqueKey(),
           child: Row(
             children: <Widget>[
-              Text(account.pgpName),
-              Visibility(
-                visible: !hideLocations,
-                child: Text(':${account.locationName}'),
+              Text(currentAccount!.pgpName),
+              if (!hideLocations) Text(':${currentAccount!.locationName}'),
+            ],
+          ),
+        ),
+      ];
+    }
+    return accounts.map((account) {
+      return DropdownMenuItem(
+        value: account,
+        key: UniqueKey(),
+        child: Row(
+          children: <Widget>[
+            Text(account.pgpName),
+            if (!hideLocations) Text(':${account.locationName}'),
+          ],
+        ),
+      );
+    }).toList();
+  }
+
+  void _onAccountChanged(Account? selectedAccount) {
+    if (selectedAccount != null) {
+      setState(() {
+        currentAccount = selectedAccount;
+        wrongPassword = false;
+      });
+    }
+  }
+
+  void _revealLocations() {
+    if (hideLocations && mounted) {
+      setState(() {
+        hideLocations = false;
+      });
+      showToast('Locations revealed', duration: const Duration(seconds: 2));
+    }
+  }
+
+  Widget _buildLogo() {
+    return Hero(
+      tag: 'logo',
+      child: Image.asset(
+        'assets/rs-logo.png',
+        height: 250,
+        width: 250,
+      ),
+    );
+  }
+
+  Widget _buildAccountDropdown() {
+    final dropdownItems = _buildDropdownMenuItems();
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: const Color(0xFFF5F5F5),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        height: 40,
+        child: GestureDetector(
+          onLongPress: _revealLocations,
+          child: Row(
+            children: <Widget>[
+              const Icon(
+                Icons.person_outline,
+                color: Color(0xFF9E9E9E),
+                size: 22,
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: dropdownItems.isNotEmpty
+                    ? DropdownButtonHideUnderline(
+                        child: DropdownButton<Account>(
+                          value: currentAccount,
+                          items: dropdownItems,
+                          onChanged: _onAccountChanged,
+                          isExpanded: true,
+                          hint: const Text('Select Account'),
+                          disabledHint: currentAccount != null
+                              ? Text(currentAccount!.pgpName)
+                              : const Text('No accounts found'),
+                        ),
+                      )
+                    : const Center(
+                        child: Text(
+                          'No accounts available. Please create one.',
+                          style: TextStyle(color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
               ),
             ],
           ),
         ),
-      );
-    }
-    return items;
+      ),
+    );
   }
 
-  void changedDropDownItem(Account? selectedAccount) {
-    setState(() {
-      currentAccount = selectedAccount!;
-    });
+  Widget _buildPasswordField() {
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: const Color(0xFFF5F5F5),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        height: 40,
+        child: TextField(
+          controller: passwordController,
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            icon: Icon(
+              Icons.lock_outline,
+              color: Color(0xFF9E9E9E),
+              size: 22,
+            ),
+            hintText: 'Password',
+          ),
+          obscureText: true,
+          onChanged: (_) {
+            if (wrongPassword && mounted) {
+              setState(() {
+                wrongPassword = false;
+              });
+            }
+          },
+        ),
+      ),
+    );
   }
 
-  void revealLocations(BuildContext context) {
-    if (hideLocations) {
-      setState(() {
-        hideLocations = false;
-      });
-      showToast('Locations revealed');
-    }
+  Widget _buildWrongPasswordError() {
+    return Visibility(
+      visible: wrongPassword,
+      maintainState: true,
+      maintainAnimation: true,
+      maintainSize: true,
+      child: const Padding(
+        padding: EdgeInsets.only(top: 8, left: 16, right: 16),
+        child: Text(
+          'Wrong password. Please try again.',
+          style: TextStyle(color: Colors.red, fontSize: 12),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
   }
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  Widget _buildSignInButton() {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+      ),
+      onPressed: (currentAccount == null || passwordController.text.isEmpty)
+          ? null
+          : () {
+              if (currentAccount != null) {
+                attemptLogIn(currentAccount!, passwordController.text);
+              }
+            },
+      child: Ink(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: <Color>[
+              Color(0xFF00FFFF),
+              Color(0xFF29ABE2),
+            ],
+            begin: Alignment(-1, -4),
+            end: Alignment(1, 4),
+          ),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          alignment: Alignment.center,
+          child: Text(
+            'Sign In',
+            style: TextStyle(
+              fontSize: 18,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignUpButton(BuildContext context) {
+    return TextButton(
+      onPressed: () {
+        Navigator.pushNamed(context, '/signup');
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            "Don't have an account? ",
+            style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+          ),
+          Text(
+            'Sign Up',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.secondary,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (currentAccount == null) {
+      final accounts =
+          Provider.of<AccountCredentials>(context, listen: false).accountList;
+      if (accounts.isNotEmpty) {
+        currentAccount = Provider.of<AccountCredentials>(context, listen: false)
+                .getlastAccountUsed ??
+            accounts.first;
+      }
+    }
+
     return Scaffold(
-      key: _scaffoldKey,
       backgroundColor: Colors.white,
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints viewportConstraints) {
@@ -149,197 +363,24 @@ class SignInScreenState extends State<SignInScreen> {
               ),
               child: IntrinsicHeight(
                 child: Center(
-                  child: SizedBox(
-                    width: 300,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Hero(
-                                tag: 'logo',
-                                child: Image.asset(
-                                  'assets/rs-logo.png',
-                                  height: 250,
-                                  width: 250,
-                                ),
-                              ),
-                              SizedBox(
-                                width: double.infinity,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15),
-                                    color: const Color(0xFFF5F5F5),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 15,
-                                  ),
-                                  height: 40,
-                                  child: GestureDetector(
-                                    onLongPress: () {
-                                      revealLocations(context);
-                                    },
-                                    child: Row(
-                                      children: <Widget>[
-                                        const Icon(
-                                          Icons.person_outline,
-                                          color: Color(0xFF9E9E9E),
-                                          size: 22,
-                                        ),
-                                        const SizedBox(
-                                          width: 15,
-                                        ),
-                                        Expanded(
-                                          child: getDropDownMenuItems(context)
-                                                  .isNotEmpty
-                                              ? DropdownButtonHideUnderline(
-                                                  child: DropdownButton(
-                                                    value: currentAccount,
-                                                    items: getDropDownMenuItems(
-                                                      context,
-                                                    ),
-                                                    onChanged:
-                                                        changedDropDownItem,
-                                                    disabledHint:
-                                                        const Text('Login'),
-                                                  ),
-                                                )
-                                              : const SizedBox(),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 15),
-                              SizedBox(
-                                width: double.infinity,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15),
-                                    color: const Color(0xFFF5F5F5),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 15,
-                                  ),
-                                  height: 40,
-                                  child: TextField(
-                                    controller: passwordController,
-                                    decoration: const InputDecoration(
-                                      border: InputBorder.none,
-                                      icon: Icon(
-                                        Icons.lock_outline,
-                                        color: Color(0xFF9E9E9E),
-                                        size: 22,
-                                      ),
-                                      hintText: 'Password',
-                                    ),
-                                    obscureText: true,
-                                  ),
-                                ),
-                              ),
-                              Visibility(
-                                visible: wrongPassword,
-                                child: const SizedBox(
-                                  width: double.infinity,
-                                  child: Row(
-                                    children: <Widget>[
-                                      SizedBox(
-                                        height: 25,
-                                        width: 52,
-                                        child: Align(
-                                          alignment: Alignment.centerRight,
-                                          child: Text(
-                                            'Wrong password',
-                                            style: TextStyle(
-                                              color: Colors.red,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: wrongPassword ? 8 : 24),
-                              if (currentAccount != null)
-                                ElevatedButton(
-                                  onPressed: () {
-                                    attemptLogIn(
-                                      currentAccount!,
-                                      passwordController.text,
-                                    );
-                                  },
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        gradient: const LinearGradient(
-                                          colors: <Color>[
-                                            Color(0xFF00FFFF),
-                                            Color(0xFF29ABE2),
-                                          ],
-                                          begin: Alignment(-1, -4),
-                                          end: Alignment(1, 4),
-                                        ),
-                                      ),
-                                      padding: const EdgeInsets.all(7),
-                                      child: const Text(
-                                        'Login',
-                                        style: TextStyle(fontSize: 17),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              const SizedBox(
-                                height: 6,
-                              ),
-                              const Text(
-                                'OR',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontFamily: 'Oxygen',
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(
-                                height: 6,
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pushNamed(context, '/signup');
-                                },
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      gradient: const LinearGradient(
-                                        colors: <Color>[
-                                          Color(0xFF00FFFF),
-                                          Color(0xFF29ABE2),
-                                        ],
-                                        begin: Alignment(-1, -4),
-                                        end: Alignment(1, 4),
-                                      ),
-                                    ),
-                                    padding: const EdgeInsets.all(7),
-                                    child: const Text(
-                                      'Create Account',
-                                      style: TextStyle(fontSize: 17),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        const Spacer(),
+                        _buildLogo(),
+                        const SizedBox(height: 30),
+                        _buildAccountDropdown(),
+                        const SizedBox(height: 15),
+                        _buildPasswordField(),
+                        _buildWrongPasswordError(),
+                        const SizedBox(height: 25),
+                        _buildSignInButton(),
+                        const SizedBox(height: 15),
+                        _buildSignUpButton(context),
+                        const Spacer(),
                       ],
                     ),
                   ),

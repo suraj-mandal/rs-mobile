@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:retroshare/common/show_dialog.dart';
 import 'package:retroshare/model/http_exception.dart';
-import 'package:retroshare/provider/identity.dart';
 import 'package:retroshare/provider/auth.dart';
+import 'package:retroshare/provider/identity.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -106,6 +106,230 @@ class SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
+  Widget _buildLogo() {
+    return Hero(
+      tag: 'logo',
+      child: Image.asset(
+        'assets/rs-logo.png',
+        height: 250,
+        width: 250,
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    bool obscureText = false,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: const Color(0xFFF5F5F5),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        height: 40,
+        child: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            icon: Icon(
+              icon,
+              color: const Color(0xFF9E9E9E),
+              size: 22,
+            ),
+            hintText: hintText,
+          ),
+          style: Theme.of(context).textTheme.bodyLarge,
+          obscureText: obscureText,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUsernameField() {
+    return _buildTextField(
+      controller: usernameController,
+      hintText: 'Username',
+      icon: Icons.person_outline,
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return _buildTextField(
+      controller: passwordController,
+      hintText: 'Password',
+      icon: Icons.lock_outline,
+      obscureText: true,
+    );
+  }
+
+  Widget _buildRepeatPasswordField() {
+    return _buildTextField(
+      controller: repeatPasswordController,
+      hintText: 'Repeat password',
+      icon: Icons.lock_outline,
+      obscureText: true,
+    );
+  }
+
+  Widget _buildNodeNameField() {
+    return _buildTextField(
+      controller: nodeNameController,
+      hintText: 'Node name',
+      icon: Icons.smartphone,
+    );
+  }
+
+  Widget _buildErrorText(String message) {
+    return SizedBox(
+      width: double.infinity,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 52, top: 2, bottom: 8),
+        child: Text(
+          message,
+          style: const TextStyle(color: Colors.red, fontSize: 12),
+          textAlign: TextAlign.left,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUsernameError() {
+    if (!isUsernameCorrect) {
+      return _buildErrorText('Username is too short');
+    }
+    return const SizedBox(height: 10);
+  }
+
+  Widget _buildPasswordError() {
+    if (passwordError == PasswordError.tooShort) {
+      return _buildErrorText('Password is too short');
+    }
+    return const SizedBox(height: 10);
+  }
+
+  Widget _buildRepeatPasswordError() {
+    if (passwordError == PasswordError.notTheSame) {
+      return _buildErrorText('Passwords do not match');
+    }
+    return const SizedBox(height: 10);
+  }
+
+  Widget _buildAdvancedOptionsToggle() {
+    return SizedBox(
+      width: double.infinity,
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            advancedOption = !advancedOption;
+          });
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          height: 45,
+          child: Row(
+            children: <Widget>[
+              Checkbox(
+                value: advancedOption,
+                onChanged: (bool? value) {
+                  setState(() {
+                    advancedOption = value ?? false;
+                  });
+                },
+              ),
+              const SizedBox(width: 3),
+              Text(
+                'Advanced option',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdvancedOptionsFields() {
+    return Visibility(
+      visible: advancedOption,
+      child: Column(
+        children: [
+          const SizedBox(height: 10),
+          _buildNodeNameField(),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              height: 45,
+              child: Row(
+                children: <Widget>[
+                  Checkbox(
+                    value: false,
+                    onChanged: (bool? value) {},
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    'Tor/I2p Hidden node',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCreateAccountButton() {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+      ),
+      onPressed: createAccount,
+      child: Ink(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: <Color>[
+              Color(0xFF00FFFF),
+              Color(0xFF29ABE2),
+            ],
+            begin: Alignment(-1, -4),
+            end: Alignment(1, 4),
+          ),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(10),
+          alignment: Alignment.center,
+          child: const Text(
+            'Create account',
+            style: TextStyle(fontSize: 20),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,298 +341,17 @@ class SignUpScreenState extends State<SignUpScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Hero(
-                  tag: 'logo',
-                  child: Image.asset(
-                    'assets/rs-logo.png',
-                    height: 250,
-                    width: 250,
-                  ),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      color: const Color(0xFFF5F5F5),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    height: 40,
-                    child: TextField(
-                      controller: usernameController,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        icon: Icon(
-                          Icons.person_outline,
-                          color: Color(0xFF9E9E9E),
-                          size: 22,
-                        ),
-                        hintText: 'Username',
-                      ),
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: !isUsernameCorrect,
-                  child: const SizedBox(
-                    width: double.infinity,
-                    child: Row(
-                      children: <Widget>[
-                        SizedBox(
-                          height: 25,
-                          width: 52,
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              'Username is too short',
-                              style: TextStyle(
-                                color: Colors.red,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: isUsernameCorrect,
-                  child: const SizedBox(height: 10),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      color: const Color(0xFFF5F5F5),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    height: 40,
-                    child: TextField(
-                      controller: passwordController,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        icon: Icon(
-                          Icons.lock_outline,
-                          color: Color(0xFF9E9E9E),
-                          size: 22,
-                        ),
-                        hintText: 'Password',
-                      ),
-                      style: Theme.of(context).textTheme.bodyLarge,
-                      obscureText: true,
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: passwordError == PasswordError.tooShort,
-                  child: const SizedBox(
-                    width: double.infinity,
-                    child: Row(
-                      children: <Widget>[
-                        SizedBox(
-                          height: 25,
-                          width: 52,
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              'Password is too short',
-                              style: TextStyle(
-                                color: Colors.red,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: passwordError != PasswordError.tooShort,
-                  child: const SizedBox(height: 10),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      color: const Color(0xFFF5F5F5),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    height: 40,
-                    child: TextField(
-                      controller: repeatPasswordController,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        icon: Icon(
-                          Icons.lock_outline,
-                          color: Color(0xFF9E9E9E),
-                          size: 22,
-                        ),
-                        hintText: 'Repeat password',
-                      ),
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      obscureText: true,
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: passwordError == PasswordError.notTheSame,
-                  child: const SizedBox(
-                    width: double.infinity,
-                    child: Row(
-                      children: <Widget>[
-                        SizedBox(
-                          height: 25,
-                          width: 52,
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              'Passwords do not match',
-                              style: TextStyle(
-                                color: Colors.red,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: passwordError != PasswordError.notTheSame,
-                  child: const SizedBox(height: 10),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        advancedOption = !advancedOption;
-                      });
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        //color: Color(0xFFF5F5F5),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      height: 45,
-                      child: Row(
-                        children: <Widget>[
-                          Checkbox(
-                            value: advancedOption,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                advancedOption = value ?? false;
-                              });
-                            },
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            'Advanced option',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: advancedOption,
-                  child: const SizedBox(height: 10),
-                ),
-                Visibility(
-                  visible: advancedOption,
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        color: const Color(0xFFF5F5F5),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      height: 40,
-                      child: TextField(
-                        controller: nodeNameController,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          icon: Icon(
-                            Icons.smartphone,
-                            color: Color(0xFF9E9E9E),
-                            size: 22,
-                          ),
-                          hintText: 'Node name',
-                        ),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: advancedOption,
-                  child: const SizedBox(height: 10),
-                ),
-                Visibility(
-                  visible: advancedOption,
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        //color: Color(0xFFF5F5F5),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      height: 45,
-                      child: Row(
-                        children: <Widget>[
-                          Checkbox(
-                            // todo: implement Tor/I2p Hidden node
-                            value: false,
-                            onChanged: (bool? value) {},
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            'Tor/I2p Hidden node',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                _buildLogo(),
+                _buildUsernameField(),
+                _buildUsernameError(),
+                _buildPasswordField(),
+                _buildPasswordError(),
+                _buildRepeatPasswordField(),
+                _buildRepeatPasswordError(),
+                _buildAdvancedOptionsToggle(),
+                _buildAdvancedOptionsFields(),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    await createAccount();
-                  },
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        gradient: const LinearGradient(
-                          colors: <Color>[
-                            Color(0xFF00FFFF),
-                            Color(0xFF29ABE2),
-                          ],
-                          begin: Alignment(-1, -4),
-                          end: Alignment(1, 4),
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(10),
-                      child: const Text(
-                        'Create account',
-                        style: TextStyle(fontSize: 20),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ),
+                _buildCreateAccountButton(),
                 const SizedBox(height: 70),
               ],
             ),
