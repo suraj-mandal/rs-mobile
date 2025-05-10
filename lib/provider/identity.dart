@@ -48,7 +48,7 @@ class Identities with ChangeNotifier {
     }
   }
 
-  Future<void> createnewIdenity(Identity id, RsGxsImage image) async {
+  Future<void> createNewIdenity(Identity id, RsGxsImage image) async {
     if (_authToken == null) {
       return;
     }

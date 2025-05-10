@@ -66,15 +66,17 @@ class SignUpScreenState extends State<SignUpScreen> {
 
     if (!success) return;
 
-    unawaited(Navigator.pushNamed(
-      context,
-      '/',
-      arguments: {
-        'statusText': 'Creating account...\nThis could take minutes',
-        'isLoading': true,
-        'spinner': true,
-      },
-    ));
+    unawaited(
+      Navigator.pushNamed(
+        context,
+        '/',
+        arguments: {
+          'statusText': 'Creating account...\nThis could take minutes',
+          'isLoading': true,
+          'spinner': true,
+        },
+      ),
+    );
     try {
       final accountSignup =
           Provider.of<AccountCredentials>(context, listen: false);
@@ -100,6 +102,7 @@ class SignUpScreenState extends State<SignUpScreen> {
       const errorMessage = 'Authentication failed';
       await errorShowDialog(errorMessage, 'Something went wrong', context);
     } catch (e) {
+      debugPrint('Error creating account: $e');
       await errorShowDialog(
         'Retroshare Service Down',
         'Try to restart the app Again!',

@@ -45,28 +45,13 @@ class LaunchTransitionScreenState extends State<LaunchTransitionScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   foregroundColor: Colors.black,
-                                ),
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(15),
-                                      gradient: const LinearGradient(
-                                        colors: <Color>[
-                                          Color(0xFF00FFFF),
-                                          Color(0xFF29ABE2),
-                                        ],
-                                        begin: Alignment(-1, -4),
-                                        end: Alignment(1, 4),
-                                      ),
-                                    ),
-                                    padding: const EdgeInsets.all(10),
-                                    child: const Text(
-                                      'Create account',
-                                      style: TextStyle(fontSize: 18),
-                                      textAlign: TextAlign.center,
-                                    ),
+                                  padding: EdgeInsets.zero,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
                                   ),
+                                ),
+                                child: const GradientButton(
+                                  text: 'Create account',
                                 ),
                               ),
                             ],
@@ -80,6 +65,37 @@ class LaunchTransitionScreenState extends State<LaunchTransitionScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class GradientButton extends StatelessWidget {
+  const GradientButton({super.key, required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          gradient: const LinearGradient(
+            colors: <Color>[
+              Color(0xFF00FFFF),
+              Color(0xFF29ABE2),
+            ],
+            begin: Alignment(-1, -4),
+            end: Alignment(1, 4),
+          ),
+        ),
+        padding: const EdgeInsets.all(10),
+        child: Text(
+          text,
+          style: const TextStyle(fontSize: 18),
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }

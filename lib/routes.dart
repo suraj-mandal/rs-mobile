@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:retroshare/ui/about_screen.dart';
 import 'package:retroshare/ui/add_friend/add_friend_screen.dart';
 import 'package:retroshare/ui/change_identity_screen.dart';
-import 'package:retroshare/ui/createIdenity_screen/create_identity_screen.dart';
+import 'package:retroshare/ui/create_identity/create_identity_screen.dart';
 import 'package:retroshare/ui/create_room_screen.dart';
 import 'package:retroshare/ui/discover_chats_screen.dart';
 import 'package:retroshare/ui/friends_locations_screen.dart';

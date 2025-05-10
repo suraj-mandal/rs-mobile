@@ -10,25 +10,31 @@ import 'package:retroshare/common/styles.dart';
 import 'package:retroshare/provider/identity.dart';
 import 'package:retroshare_api_wrapper/retroshare.dart';
 
-class PseudoSignedIdenityTab extends StatefulWidget {
-  const PseudoSignedIdenityTab(this.isFirstId, {super.key});
+class GenericIdentityTab extends StatefulWidget {
+  const GenericIdentityTab({
+    super.key,
+    required this.isFirstId,
+    required this.isSignedIdentity,
+    required this.buttonText,
+  });
+
   final bool isFirstId;
+  final bool isSignedIdentity;
+  final String buttonText;
 
   @override
-  PseudoSignedIdenityTabState createState() => PseudoSignedIdenityTabState();
+  GenericIdentityTabState createState() => GenericIdentityTabState();
 }
 
-class PseudoSignedIdenityTabState extends State<PseudoSignedIdenityTab> {
+class GenericIdentityTabState extends State<GenericIdentityTab> {
   bool _isLoading = false;
-  final TextEditingController pseudosignednameController =
-      TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   RsGxsImage? _image;
-
   bool _showError = false;
 
   @override
   void dispose() {
-    pseudosignednameController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -51,7 +57,7 @@ class PseudoSignedIdenityTabState extends State<PseudoSignedIdenityTab> {
   }
 
   bool _validate() {
-    return pseudosignednameController.text.length >= 3;
+    return _nameController.text.length >= 3;
   }
 
   Future<void> _createIdentity() async {
@@ -62,15 +68,15 @@ class PseudoSignedIdenityTabState extends State<PseudoSignedIdenityTab> {
 
     try {
       final avatarBase64 = _image?.base64String;
-      await Provider.of<Identities>(context, listen: false).createnewIdenity(
+      await Provider.of<Identities>(context, listen: false).createNewIdenity(
         Identity(
           mId: '',
-          signed: false,
-          name: pseudosignednameController.text,
+          signed: widget.isSignedIdentity,
+          name: _nameController.text,
           avatar: avatarBase64,
           isContact: false,
         ),
-        _image ?? RsGxsImage(),
+        _image ?? const RsGxsImage(),
       );
       if (!mounted) return;
       if (widget.isFirstId) {
@@ -110,9 +116,9 @@ class PseudoSignedIdenityTabState extends State<PseudoSignedIdenityTab> {
                         height: 20,
                       ),
                       GestureDetector(
-                        onTap: () {
+                        onTap: () async {
                           if (_isLoading) return;
-                          imagePickerDialog(context, _setImage);
+                          await imagePickerDialog(context, _setImage);
                         },
                         child: Container(
                           height: 300 * 0.7,
@@ -157,7 +163,7 @@ class PseudoSignedIdenityTabState extends State<PseudoSignedIdenityTab> {
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           height: 40,
                           child: TextField(
-                            controller: pseudosignednameController,
+                            controller: _nameController,
                             enabled: !_isLoading,
                             onChanged: (text) {
                               if (!mounted) return;
@@ -211,49 +217,51 @@ class PseudoSignedIdenityTabState extends State<PseudoSignedIdenityTab> {
             Visibility(
               visible: !_isLoading,
               child: BottomBar(
-                child: Center(
-                  child: SizedBox(
-                    height: 2 * appBarHeight / 3,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                      onPressed: () {
-                        final isValid = _validate();
-                        if (!mounted) return;
-                        setState(() {
-                          _showError = !isValid;
-                        });
-                        if (isValid) {
-                          _createIdentity();
-                        }
-                      },
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          gradient: const LinearGradient(
-                            colors: <Color>[
-                              Color(0xFF00FFFF),
-                              Color(0xFF29ABE2),
-                            ],
-                            begin: Alignment(-1, -4),
-                            end: Alignment(1, 4),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Center(
+                    child: SizedBox(
+                      height: 2 * appBarHeight / 3,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
                           ),
                         ),
-                        child: Container(
-                          alignment: Alignment.center,
-                          constraints: const BoxConstraints(minHeight: 50),
-                          child: FittedBox(
-                            child: Text(
-                              'Create Identity',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelLarge
-                                  ?.copyWith(color: Colors.white),
-                              textAlign: TextAlign.center,
+                        onPressed: () {
+                          final isValid = _validate();
+                          if (!mounted) return;
+                          setState(() {
+                            _showError = !isValid;
+                          });
+                          if (isValid) {
+                            _createIdentity();
+                          }
+                        },
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            gradient: const LinearGradient(
+                              colors: <Color>[
+                                Color(0xFF00FFFF),
+                                Color(0xFF29ABE2),
+                              ],
+                              begin: Alignment(-1, -4),
+                              end: Alignment(1, 4),
+                            ),
+                          ),
+                          child: Container(
+                            alignment: Alignment.center,
+                            constraints: const BoxConstraints(minHeight: 50),
+                            child: FittedBox(
+                              child: Text(
+                                widget.buttonText,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium!
+                                    .copyWith(color: Colors.white),
+                              ),
                             ),
                           ),
                         ),
@@ -265,20 +273,15 @@ class PseudoSignedIdenityTabState extends State<PseudoSignedIdenityTab> {
             ),
           ],
         ),
-        Visibility(
-          visible: _isLoading,
-          child: const Center(
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: Color.fromRGBO(0, 0, 0, 0.1)),
-              child: Center(
-                child: ColorLoader3(
-                  radius: 15,
-                  dotRadius: 6,
-                ),
-              ),
-            ),
+        if (_isLoading)
+          const Opacity(
+            opacity: 0.8,
+            child: ModalBarrier(dismissible: false, color: Colors.black),
           ),
-        ),
+        if (_isLoading)
+          const Center(
+            child: ColorLoader3(),
+          ),
       ],
     );
   }

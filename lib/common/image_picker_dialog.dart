@@ -28,7 +28,6 @@ Future<void> imagePickerDialog(
       debugPrint('Error picking image: $e');
     } finally {
       callback(resultFile);
-      if (context.mounted) Navigator.pop(context);
     }
   }
 
@@ -44,14 +43,18 @@ Future<void> imagePickerDialog(
                 name: 'Gallery',
                 buttonIcon: Icons.photo_library,
                 labelLargeIcon: Icons.photo_library,
-                onPressed: () => pickAndCallback(ImageSource.gallery),
+                onPressed: () async {
+                  await pickAndCallback(ImageSource.gallery);
+                },
               ),
               const Padding(padding: EdgeInsets.all(8)),
               Button(
                 name: 'Camera',
                 buttonIcon: Icons.camera_alt,
                 labelLargeIcon: Icons.camera_alt,
-                onPressed: () => pickAndCallback(ImageSource.camera),
+                onPressed: () async {
+                  await pickAndCallback(ImageSource.camera);
+                },
               ),
             ],
           ),
