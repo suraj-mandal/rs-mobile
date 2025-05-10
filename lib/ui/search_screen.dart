@@ -90,6 +90,9 @@ class SearchScreenState extends State<SearchScreen>
   Future<void> _goToChat(Chat lobby) async {
     final curr =
         Provider.of<Identities>(context, listen: false).currentIdentity;
+    if (curr == null) {
+      return;
+    }
     await Navigator.pushNamed(
       context,
       '/room',
@@ -501,7 +504,7 @@ class SearchScreenState extends State<SearchScreen>
                           ? MemoryImage(base64Decode(id.avatar!))
                           : null,
                       isMessage: true,
-                      isUnread:
+                      isUnread: currentIdenInfo != null &&
                           Provider.of<RoomChatLobby>(context, listen: false)
                                   .getUnreadCount(id, currentIdenInfo) >
                               0,
@@ -513,6 +516,9 @@ class SearchScreenState extends State<SearchScreen>
                           final curr =
                               Provider.of<Identities>(context, listen: false)
                                   .currentIdentity;
+                          if (curr == null) {
+                            return;
+                          }
                           final chat =
                               Provider.of<RoomChatLobby>(context, listen: false)
                                   .getChat(curr, id);
@@ -550,7 +556,7 @@ class SearchScreenState extends State<SearchScreen>
                           ? MemoryImage(base64Decode(id.avatar!))
                           : null,
                       isMessage: true,
-                      isUnread:
+                      isUnread: currentIdenInfo != null &&
                           Provider.of<RoomChatLobby>(context, listen: false)
                                   .getUnreadCount(id, currentIdenInfo) >
                               0,
@@ -562,6 +568,9 @@ class SearchScreenState extends State<SearchScreen>
                           final curr =
                               Provider.of<Identities>(context, listen: false)
                                   .currentIdentity;
+                          if (curr == null) {
+                            return;
+                          }
                           final chat =
                               Provider.of<RoomChatLobby>(context, listen: false)
                                   .getChat(curr, id);

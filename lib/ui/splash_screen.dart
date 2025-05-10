@@ -65,13 +65,13 @@ class SplashState extends State<SplashScreen> {
               setControlCallbacks();
               final auth =
                   Provider.of<AccountCredentials>(context, listen: false);
-              auth.checkisvalidAuthToken().then((isTokenValid) async {
+              auth.checkIsValidAuthToken().then((isTokenValid) async {
                 // Already authenticated
-                if (isTokenValid) {
+                if (isTokenValid && auth.loggedinAccount != null) {
                   _setStatusText('Logging in...');
                   final ids = Provider.of<Identities>(context, listen: false);
                   await ids.fetchOwnidenities().then((value) {
-                    if (ids.ownIdentity.isEmpty) {
+                    if (ids.ownIdentity != null && ids.ownIdentity.isEmpty) {
                       Navigator.pushReplacementNamed(
                         context,
                         '/create_identity',

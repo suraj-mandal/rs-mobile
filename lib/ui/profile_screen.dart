@@ -68,10 +68,15 @@ class ProfileScreenState extends State<ProfileScreen> {
                       'Type',
                     ),
                     const SizedBox(height: 20),
-                    textField(lastAccount.pgpName, 'Node Name'),
-                    const SizedBox(height: 20),
-                    textField(lastAccount.locationId, 'Node ID'),
-                    const SizedBox(height: 20),
+                    if (lastAccount != null)
+                      Column(
+                        children: [
+                          textField(lastAccount.pgpName, 'Node Name'),
+                          const SizedBox(height: 20),
+                          textField(lastAccount.locationId, 'Node ID'),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
                     InkWell(
                       onTap: () async {
                         await Navigator.of(context).pushReplacementNamed(

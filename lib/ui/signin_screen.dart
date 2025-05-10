@@ -18,7 +18,7 @@ class SignInScreenState extends State<SignInScreen> {
   TextEditingController passwordController = TextEditingController();
 
   late List<DropdownMenuItem<Account>> accountsDropdown;
-  late Account currentAccount;
+  late Account? currentAccount;
   late bool hideLocations;
   late bool wrongPassword;
 
@@ -264,36 +264,37 @@ class SignInScreenState extends State<SignInScreen> {
                                 ),
                               ),
                               SizedBox(height: wrongPassword ? 8 : 24),
-                              ElevatedButton(
-                                onPressed: () {
-                                  attemptLogIn(
-                                    currentAccount,
-                                    passwordController.text,
-                                  );
-                                },
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      gradient: const LinearGradient(
-                                        colors: <Color>[
-                                          Color(0xFF00FFFF),
-                                          Color(0xFF29ABE2),
-                                        ],
-                                        begin: Alignment(-1, -4),
-                                        end: Alignment(1, 4),
+                              if (currentAccount != null)
+                                ElevatedButton(
+                                  onPressed: () {
+                                    attemptLogIn(
+                                      currentAccount!,
+                                      passwordController.text,
+                                    );
+                                  },
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        gradient: const LinearGradient(
+                                          colors: <Color>[
+                                            Color(0xFF00FFFF),
+                                            Color(0xFF29ABE2),
+                                          ],
+                                          begin: Alignment(-1, -4),
+                                          end: Alignment(1, 4),
+                                        ),
                                       ),
-                                    ),
-                                    padding: const EdgeInsets.all(7),
-                                    child: const Text(
-                                      'Login',
-                                      style: TextStyle(fontSize: 17),
-                                      textAlign: TextAlign.center,
+                                      padding: const EdgeInsets.all(7),
+                                      child: const Text(
+                                        'Login',
+                                        style: TextStyle(fontSize: 17),
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
                               const SizedBox(
                                 height: 6,
                               ),

@@ -70,13 +70,17 @@ class QRScannerState extends State<QRScanner>
     String ownCert;
     final authToken =
         Provider.of<AccountCredentials>(context, listen: false).authtoken;
+    if (authToken == null) {
+      return '';
+    }
     if (!check) {
       ownCert = (await RsPeers.getOwnCert(authToken)).replaceAll('\n', '');
     } else {
       ownCert = await RsPeers.getShortInvite(
         authToken,
-        sslId:
-            Provider.of<AccountCredentials>(context).lastAccountUsed.locationId,
+        sslId: Provider.of<AccountCredentials>(context)
+            .lastAccountUsed!
+            .locationId,
       );
     }
     await Future.delayed(const Duration(milliseconds: 60));

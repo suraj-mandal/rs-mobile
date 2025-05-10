@@ -94,7 +94,7 @@ class FriendsTabState extends State<FriendsTab> {
                                 context,
                                 listen: false,
                               ).currentIdentity;
-
+                              if (curr == null) return;
                               Navigator.pushNamed(
                                 context,
                                 '/room',
@@ -166,6 +166,7 @@ class FriendsTabState extends State<FriendsTab> {
                                 context,
                                 listen: false,
                               ).currentIdentity;
+                              if (curr == null) return;
                               Navigator.pushNamed(
                                 context,
                                 '/room',

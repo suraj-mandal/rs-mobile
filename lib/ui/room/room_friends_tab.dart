@@ -150,6 +150,9 @@ class RoomFriendsTabState extends State<RoomFriendsTab> {
                                 context,
                                 listen: false,
                               ).currentIdentity;
+                              if (curr == null) {
+                                return;
+                              }
                               // Ensure current identity and participant are valid
                               final chatData = Provider.of<RoomChatLobby>(
                                 context,

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:retroshare/common/styles.dart';
-import 'package:retroshare/provider/identity.dart';
 import 'package:retroshare/provider/auth.dart';
+import 'package:retroshare/provider/identity.dart';
 import 'package:retroshare_api_wrapper/retroshare.dart';
 
 class NotificationScreen extends StatefulWidget {
@@ -16,6 +16,9 @@ class NotificationScreenState extends State<NotificationScreen> {
   Future<dynamic> getinvitelist(BuildContext context) async {
     final authToken =
         Provider.of<AccountCredentials>(context, listen: false).authtoken;
+    if (authToken == null) {
+      return;
+    }
     final invites = await RsMsgs.getPendingChatLobbyInvites(authToken);
     for (var i = 0; i < invites.length; i++) {
       invites[i]['location'] = await RsPeers.getPeerDetails(
@@ -151,11 +154,19 @@ class NotificationScreenState extends State<NotificationScreen> {
                                                     ),
                                                     ElevatedButton(
                                                       onPressed: () async {
-                                                        final mId = Provider.of<
-                                                            Identities>(
+                                                        final currentIdentity =
+                                                            Provider.of<
+                                                                Identities>(
                                                           context,
                                                           listen: false,
-                                                        ).currentIdentity.mId;
+                                                        ).currentIdentity;
+
+                                                        if (currentIdentity ==
+                                                            null) {
+                                                          return;
+                                                        }
+                                                        final mId =
+                                                            currentIdentity.mId;
 
                                                         await RsMsgs
                                                             .acceptLobbyInvite(

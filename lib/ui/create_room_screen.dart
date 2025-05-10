@@ -167,8 +167,10 @@ class CreateRoomScreenState extends State<CreateRoomScreen>
     if (_isRoomCreation && !_blockCreation) {
       _blockCreation = true;
       await _doneButtonController.reverse();
-      final id =
-          Provider.of<Identities>(context, listen: false).currentIdentity.mId;
+      final currentIdentity =
+          Provider.of<Identities>(context, listen: false).currentIdentity;
+      if (currentIdentity == null) return;
+      final id = currentIdentity.mId;
       try {
         await Provider.of<ChatLobby>(context, listen: false)
             .createChatlobby(
@@ -618,6 +620,7 @@ class CreateRoomScreenState extends State<CreateRoomScreen>
                             final curr =
                                 Provider.of<Identities>(context, listen: false)
                                     .currentIdentity;
+                            if (curr == null) return;
                             Navigator.pushNamed(
                               context,
                               '/room',

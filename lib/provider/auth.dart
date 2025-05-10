@@ -5,19 +5,19 @@ import 'package:retroshare_api_wrapper/retroshare.dart';
 
 class AccountCredentials with ChangeNotifier {
   List<Account> _accountsList = [];
-  late Account _lastAccountUsed;
-  late Account _loggedinAccount;
-  late AuthToken _authToken;
-  Account get lastAccountUsed => _lastAccountUsed;
+  Account? _lastAccountUsed;
+  Account? _loggedinAccount;
+  AuthToken? _authToken;
+  Account? get lastAccountUsed => _lastAccountUsed;
   List<Account> get accountList => _accountsList;
-  Account get loggedinAccount => _loggedinAccount;
-  AuthToken get getAuthToken => _authToken;
+  Account? get loggedinAccount => _loggedinAccount;
+  AuthToken? get getAuthToken => _authToken;
 
   set logginAccount(Account acc) {
     _loggedinAccount = acc;
   }
 
-  AuthToken get authtoken => _authToken;
+  AuthToken? get authtoken => _authToken;
 
   Future<void> fetchAuthAccountList() async {
     try {
@@ -38,16 +38,19 @@ class AccountCredentials with ChangeNotifier {
       _accountsList = [];
       _accountsList = accountsList;
       notifyListeners();
-      _lastAccountUsed = await setlastAccountUsed();
+      _lastAccountUsed = await setLastAccountUsed();
     } catch (e) {
       throw HttpException(e.toString());
     }
   }
 
-  Account get getlastAccountUsed => _lastAccountUsed;
+  Account? get getlastAccountUsed => _lastAccountUsed;
 
-  Future<Account> setlastAccountUsed() async {
-    final currAccount = await RsAccounts.getCurrentAccountId(_authToken);
+  Future<Account?> setLastAccountUsed() async {
+    if (_authToken == null) {
+      return null;
+    }
+    final currAccount = await RsAccounts.getCurrentAccountId(_authToken!);
     for (final account in _accountsList) {
       if (account.locationId == currAccount) return account;
     }
@@ -55,7 +58,7 @@ class AccountCredentials with ChangeNotifier {
     if (_accountsList.isNotEmpty) {
       return _accountsList.first;
     }
-    throw Exception('No account found for setlastAccountUsed');
+    throw Exception('No account found for setLastAccountUsed');
   }
 
   Future<bool> getinitializeAuth(String locationId, String password) async {
@@ -63,13 +66,13 @@ class AccountCredentials with ChangeNotifier {
     final success = await RsJsonApi.checkExistingAuthTokens(
       locationId,
       password,
-      _authToken,
+      _authToken!,
     );
     return success;
   }
 
-  Future<bool> checkisvalidAuthToken() {
-    return RsJsonApi.isAuthTokenValid(_authToken);
+  Future<bool> checkIsValidAuthToken() async {
+    return _authToken == null ? false : RsJsonApi.isAuthTokenValid(_authToken!);
   }
 
   Future<void> login(Account currentAccount, String password) async {

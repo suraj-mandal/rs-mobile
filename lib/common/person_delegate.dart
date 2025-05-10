@@ -79,6 +79,7 @@ class PersonDelegateData {
   ) {
     final currentIdenInfo =
         Provider.of<Identities>(context, listen: false).currentIdentity;
+
     return PersonDelegateData(
       name: identity.name ?? 'Unknown Identity',
       mId: identity.mId,
@@ -87,9 +88,10 @@ class PersonDelegateData {
           : null,
       isMessage: true,
       // ignore: avoid_bool_literals_in_conditional_expressions
-      isUnread: Provider.of<RoomChatLobby>(context, listen: false)
-                  .getUnreadCount(identity, currentIdenInfo) >
-              0
+      isUnread: currentIdenInfo != null &&
+              Provider.of<RoomChatLobby>(context, listen: false)
+                      .getUnreadCount(identity, currentIdenInfo) >
+                  0
           ? true
           : false,
     );
@@ -358,7 +360,8 @@ class PersonDelegateState extends State<PersonDelegate>
       return Consumer<Identities>(
         key: UniqueKey(),
         builder: (context, id, _) {
-          if (id.selectedIdentity.mId == widget.data.mId) {
+          if (id.selectedIdentity != null &&
+              id.selectedIdentity!.mId == widget.data.mId) {
             _animationController.value = 1;
           } else {
             _animationController.value = 0;

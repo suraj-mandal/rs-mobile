@@ -72,7 +72,7 @@ class ChangeIdentityScreenState extends State<ChangeIdentityScreen> {
             child: ElevatedButton(
               onPressed: () {
                 Provider.of<Identities>(context, listen: false)
-                    .updatecurrentIdentity();
+                    .updateCurrentIdentity();
                 Navigator.pop(context);
               },
               child: Padding(

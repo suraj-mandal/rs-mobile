@@ -126,7 +126,7 @@ Stack contentBox(BuildContext context) {
 
 void showdeleteDialog(BuildContext context) {
   final name =
-      Provider.of<Identities>(context, listen: false).currentIdentity.name;
+      Provider.of<Identities>(context, listen: false).currentIdentity?.name;
   final ownIdsList =
       Provider.of<Identities>(context, listen: false).ownIdentity;
 
@@ -135,7 +135,7 @@ void showdeleteDialog(BuildContext context) {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Delete '$name'?"),
+          title: Text("Delete '${name ?? 'Unknown'}'?"),
           content: const Text(
             'The deletion of identity cannot be undone. Are you sure you want to continue?',
           ),

@@ -5,20 +5,23 @@ import 'package:retroshare_api_wrapper/retroshare.dart';
 
 class Identities with ChangeNotifier {
   List<Identity> _ownidentities = [];
-  late Identity _selected;
-  late AuthToken _authToken;
-  set authToken(AuthToken authToken) {
+  Identity? _selected;
+  AuthToken? _authToken;
+  set authToken(AuthToken? authToken) {
     _authToken = authToken;
   }
 
-  AuthToken get authToken => _authToken;
+  AuthToken? get authToken => _authToken;
 
   List<Identity> get ownIdentity => _ownidentities;
-  late Identity _currentIdentity;
-  Identity get currentIdentity => _currentIdentity;
+  Identity? _currentIdentity;
+  Identity? get currentIdentity => _currentIdentity;
 
   Future<void> fetchOwnidenities() async {
-    _ownidentities = await getOwnIdentities(_authToken);
+    if (_authToken == null) {
+      return;
+    }
+    _ownidentities = await getOwnIdentities(_authToken!);
     if (_ownidentities.isNotEmpty) {
       _currentIdentity = _ownidentities[0];
       _selected = _ownidentities[0];
@@ -26,22 +29,30 @@ class Identities with ChangeNotifier {
     notifyListeners();
   }
 
-  Identity get selectedIdentity => _selected;
+  Identity? get selectedIdentity => _selected;
 
-  void updatecurrentIdentity() {
-    _currentIdentity = _selected;
+  void updateCurrentIdentity() {
+    if (_selected != null) {
+      _currentIdentity = _selected!;
+    }
     notifyListeners();
   }
 
   void updateSelectedIdentity(Identity id) {
-    if (_selected.mId != id.mId) {
+    if (_selected == null) {
+      _selected = id;
+      notifyListeners();
+    } else if (_selected!.mId != id.mId) {
       _selected = id;
       notifyListeners();
     }
   }
 
   Future<void> createnewIdenity(Identity id, RsGxsImage image) async {
-    final newIdentity = await RsIdentity.createIdentity(id, image, _authToken);
+    if (_authToken == null) {
+      return;
+    }
+    final newIdentity = await RsIdentity.createIdentity(id, image, _authToken!);
     _ownidentities.add(newIdentity);
     _currentIdentity = newIdentity;
     _selected = _currentIdentity;
@@ -49,9 +60,13 @@ class Identities with ChangeNotifier {
   }
 
   Future<void> deleteIdentity() async {
+    if (_authToken == null || _currentIdentity == null) {
+      return;
+    }
+
     try {
       final success =
-          await RsIdentity.deleteIdentity(_currentIdentity, _authToken);
+          await RsIdentity.deleteIdentity(_currentIdentity!, _authToken!);
       if (!success) throw HttpException('BAD REQUEST');
       // ignore: unrelated_type_equality_checks
       _ownidentities.removeWhere((element) => element.mId == _currentIdentity);
@@ -66,7 +81,11 @@ class Identities with ChangeNotifier {
   }
 
   Future<void> updateIdentity(Identity id, RsGxsImage avatar) async {
-    final success = await RsIdentity.updateIdentity(id, avatar, _authToken);
+    if (_authToken == null) {
+      return;
+    }
+
+    final success = await RsIdentity.updateIdentity(id, avatar, _authToken!);
     if (!success) {
       throw 'Try Again';
     }

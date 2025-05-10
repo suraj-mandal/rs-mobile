@@ -62,6 +62,9 @@ class GetInviteState extends State<GetInvite> with TickerProviderStateMixin {
     String ownCert;
     final authToken =
         Provider.of<AccountCredentials>(context, listen: false).authtoken;
+    if (authToken == null) {
+      throw 'authToken null';
+    }
     try {
       if (!_isShortInvite) {
         ownCert = (await RsPeers.getOwnCert(authToken)).replaceAll('\n', '');

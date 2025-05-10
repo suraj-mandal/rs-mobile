@@ -43,6 +43,7 @@ class ChatsTab extends StatelessWidget {
                             final curr =
                                 Provider.of<Identities>(context, listen: false)
                                     .currentIdentity;
+                            if (curr == null) return;
                             Navigator.pushNamed(
                               context,
                               '/room',

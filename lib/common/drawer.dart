@@ -53,6 +53,9 @@ Widget drawerWidget(BuildContext ctx) {
               Center(
                 child: Consumer<Identities>(
                   builder: (context, curr, _) {
+                    if (curr.currentIdentity == null) {
+                      return const SizedBox.shrink();
+                    }
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -66,7 +69,7 @@ Widget drawerWidget(BuildContext ctx) {
                           child: Container(
                             height: 100,
                             width: 100,
-                            decoration: (curr.currentIdentity.avatar == null)
+                            decoration: (curr.currentIdentity!.avatar == null)
                                 ? BoxDecoration(
                                     borderRadius: BorderRadius.circular(18),
                                     border: Border.all(color: Colors.black38),
@@ -78,14 +81,14 @@ Widget drawerWidget(BuildContext ctx) {
                                       fit: BoxFit.fill,
                                       image: MemoryImage(
                                         base64.decode(
-                                          curr.currentIdentity.avatar ?? '',
+                                          curr.currentIdentity!.avatar ?? '',
                                         ),
                                       ),
                                     ),
                                   ),
                             child: Visibility(
-                              visible: curr.currentIdentity.avatar == null ||
-                                  curr.currentIdentity.avatar!.isEmpty,
+                              visible: curr.currentIdentity!.avatar == null ||
+                                  curr.currentIdentity!.avatar!.isEmpty,
                               child: const Center(
                                 child: Icon(
                                   Icons.person,
@@ -100,7 +103,7 @@ Widget drawerWidget(BuildContext ctx) {
                         ),
                         FittedBox(
                           child: Text(
-                            curr.currentIdentity.name ?? 'Unknown Identity',
+                            curr.currentIdentity!.name ?? 'Unknown Identity',
                             style: const TextStyle(
                               fontFamily: 'Vollkorn',
                               fontSize: 25,
@@ -218,7 +221,9 @@ class NotificationIconState extends State<NotificationIcon> {
   Future<dynamic> _inviteList() async {
     final authToken =
         Provider.of<AccountCredentials>(context, listen: false).authtoken;
-    return RsMsgs.getPendingChatLobbyInvites(authToken);
+    return authToken == null
+        ? null
+        : RsMsgs.getPendingChatLobbyInvites(authToken);
   }
 
   @override

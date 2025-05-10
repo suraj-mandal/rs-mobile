@@ -59,7 +59,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
       final authToken =
           Provider.of<AccountCredentials>(context, listen: false).authtoken;
-      await registerChatEvent(context, authToken);
+      if (authToken != null) await registerChatEvent(context, authToken);
     } catch (e) {
       debugPrint('Error during initial data fetch: $e');
       if (!mounted) return;

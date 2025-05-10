@@ -26,6 +26,7 @@ class DiscoverChatsScreenState extends State<DiscoverChatsScreen> {
   Future<void> _goToChat(lobby) async {
     final curr =
         Provider.of<Identities>(context, listen: false).currentIdentity;
+    if (curr == null) return;
     await Navigator.pushNamed(
       context,
       '/room',
