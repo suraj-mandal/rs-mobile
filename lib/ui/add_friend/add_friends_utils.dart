@@ -277,7 +277,7 @@ class GetInviteState extends State<GetInvite> with TickerProviderStateMixin {
             });
           },
           contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-          activeThumbColor: Colors.blueAccent,
+          activeTrackColor: Colors.blueAccent,
         ),
         const SizedBox(height: 10),
       ],
